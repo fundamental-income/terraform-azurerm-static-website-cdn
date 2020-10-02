@@ -1,5 +1,11 @@
 Install-Module Az.Cdn -Force
 Import-Module Az.Cdn -Force
+
+$password = ConvertTo-SecureString -String $env:servicePrincipalKey -AsPlainText -Force
+$credential = New-Object System.Management.Automation.PSCredential ($env:servicePrincipalId, $password)
+
+Connect-AzAccount -Tenant $env:tenantId -Credential $credential -ServicePrincipal
+
 $cdnProfile = Get-AzCdnProfile -ProfileName StaticCdnProfile -ResourceGroupName $env:RG_NAME
 $endpoint = Get-AzCdnEndpoint -ProfileName $cdnProfile.Name -ResourceGroupName $env:RG_NAME
 
