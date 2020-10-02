@@ -1,4 +1,4 @@
-Install-Modules Az.Cdn -Force
+Install-Module Az.Cdn -Force
 Import-Module Az.Cdn -Force
 
 $password = ConvertTo-SecureString -String $env:servicePrincipalKey -AsPlainText -Force
