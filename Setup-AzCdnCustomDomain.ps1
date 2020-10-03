@@ -36,15 +36,10 @@ catch {
 }
 
 if ($azCustomDomain.CustomHttpsProvisioningState -ne ('Enabled' -or 'Enabling')) {
-  try {
-    Write-Host "Enabling HTTPS for $env:CUSTOM_DOMAIN on Resource Id $($azCustomDomain.Id)"
-    Enable-AzCdnCustomDomainHttps -ResourceId $azCustomDomain.Id -ErrorAction Stop
-  }
-  catch {
-    Write-Host $_
-    throw "Error enabling HTTPS for $env:CUSTOM_DOMAIN..."
-  }
-} elseif ($azCustomDomain -eq $null) {
+  Write-Host "Enabling HTTPS for $env:CUSTOM_DOMAIN on Resource Id $($azCustomDomain.Id)"
+  Enable-AzCdnCustomDomainHttps -InputObject $azCustomDomain -ErrorAction Stop
+}
+elseif ($azCustomDomain -eq $null) {
   throw 'Failed to set custom domain, Domain object was null!'
 }
 
