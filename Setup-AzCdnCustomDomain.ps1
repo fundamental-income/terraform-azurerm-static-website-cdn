@@ -21,7 +21,7 @@ try {
   $azCustomDomain = New-AzCdnCustomDomain -HostName $env:CUSTOM_DOMAIN -CdnEndpoint $endpoint -CustomDomainName $azCdnCustomDomainName
 }
 catch {
-  Write-Warning 'Could not create new custom domain... it looks like it may already exist... Checking'
+  Write-Host 'Could not create new custom domain... it looks like it may already exist... Checking'
 }
 
 try {
@@ -29,22 +29,19 @@ try {
   $azCustomDomain = Get-AzCdnCustomDomain -CustomDomainName $azCdnCustomDomainName -CdnEndpoint $endpoint
 }
 catch {
-  Write-Error 'Could not create custom domain for CDN Endpoint, it also could not be found!'
-  throw;
+  throw 'Could not create custom domain for CDN Endpoint, it also could not be found!'
 }
 
 if ($azCustomDomain.CustomHttpsProvisioningState -ne ('Enabled' -or 'Enabling')) {
   try {
-    Write-Host "Enabling HTTPS for $env:CUSTOM_DOMAIN..."
+    Write-Host "Enabling HTTPS for $env:CUSTOM_DOMAIN on Resource Id $(azCustomDomain.Id)"
     Enable-AzCdnCustomDomainHttps -ResourceId $azCustomDomain.Id
   }
   catch {
-    Write-Error "Error enabling HTTPS for $env:CUSTOM_DOMAIN..."
-    throw;
+    throw "Error enabling HTTPS for $env:CUSTOM_DOMAIN..."
   }
 } elseif ($azCustomDomain -eq $null) {
-  Write-Error 'Failed to set custom domain, Domain object was null!'
-  throw;
+  throw 'Failed to set custom domain, Domain object was null!'
 }
 
 
