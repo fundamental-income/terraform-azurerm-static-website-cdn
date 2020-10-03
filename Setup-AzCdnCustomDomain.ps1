@@ -1,10 +1,12 @@
-Install-Module Az.Cdn -Force
+
+Install-Module Az -Force
 Import-Module Az.Cdn -Force
 
 $password = ConvertTo-SecureString -String $env:servicePrincipalKey -AsPlainText -Force
 $credential = New-Object System.Management.Automation.PSCredential ($env:servicePrincipalId, $password)
 
 Connect-AzAccount -Tenant $env:tenantId -Credential $credential -ServicePrincipal
+Select-AzSubscription -Subscription $env:ARM_SUBSCRIPTION_ID
 
 $cdnProfile = Get-AzCdnProfile -ProfileName StaticCdnProfile -ResourceGroupName $env:RG_NAME
 $endpoint = Get-AzCdnEndpoint -ProfileName $cdnProfile.Name -ResourceGroupName $env:RG_NAME
@@ -15,17 +17,16 @@ $azCustomDomain = $null
 $azCdnCustomDomainName = 'FundamentalIncome'
 
 try {
-  Write-Host 'Checking for existing custom domain name...'
-  $azCustomDomain = Get-AzCdnCustomDomain -CustomDomainName $azCdnCustomDomainName -CdnEndpoint $endpoint
+  Write-Host "Enabling custom domain $env:CUSTOM_DOMAIN..."
+  $azCustomDomain = New-AzCdnCustomDomain -HostName $env:CUSTOM_DOMAIN -CdnEndpoint $endpoint -CustomDomainName $azCdnCustomDomainName
 }
 catch {
   try {
-    Write-Host "Enabling custom domain $env:CUSTOM_DOMAIN..."
-    $azCustomDomain = New-AzCdnCustomDomain -HostName $env:CUSTOM_DOMAIN -CdnEndpoint $endpoint -CustomDomainName $azCdnCustomDomainName
-    continue;
+    Write-Host 'Checking for existing custom domain name...'
+    $azCustomDomain = Get-AzCdnCustomDomain -CustomDomainName $azCdnCustomDomainName -CdnEndpoint $endpoint
   }
   catch {
-    Write-Error 'Could not create custom domain for CDN Endpoint'
+    Write-Error 'Could not create custom domain for CDN Endpoint, it also could not be found!'
     throw;
   }
 }
@@ -39,6 +40,9 @@ if ($azCustomDomain.CustomHttpsProvisioningState -ne ('Enabled' -or 'Enabling'))
     Write-Error "Error enabling HTTPS for $env:CUSTOM_DOMAIN..."
     throw;
   }
+} elseif ($azCustomDomain -eq $null) {
+  Write-Error 'Failed to set custom domain, Domain object was null!'
+  throw;
 }
 
 
