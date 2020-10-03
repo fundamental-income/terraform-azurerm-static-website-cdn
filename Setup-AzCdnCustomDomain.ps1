@@ -27,6 +27,9 @@ catch {
 try {
   Write-Host 'Checking for existing custom domain name...'
   $azCustomDomain = Get-AzCdnCustomDomain -CustomDomainName $azCdnCustomDomainName -CdnEndpoint $endpoint
+  if ($azCustomDomain -ne $null) {
+    Write-Host 'Found existing custom domain!  We can continue...'
+  }
 }
 catch {
   throw 'Could not create custom domain for CDN Endpoint, it also could not be found!'
@@ -38,6 +41,7 @@ if ($azCustomDomain.CustomHttpsProvisioningState -ne ('Enabled' -or 'Enabling'))
     Enable-AzCdnCustomDomainHttps -ResourceId $azCustomDomain.Id
   }
   catch {
+    Write-Host $_
     throw "Error enabling HTTPS for $env:CUSTOM_DOMAIN..."
   }
 } elseif ($azCustomDomain -eq $null) {
