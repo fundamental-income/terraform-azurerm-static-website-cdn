@@ -15,17 +15,16 @@ $azCustomDomain = $null
 $azCdnCustomDomainName = 'FundamentalIncome'
 
 try {
-  Write-Host 'Checking for existing custom domain name...'
-  $azCustomDomain = Get-AzCdnCustomDomain -CustomDomainName $azCdnCustomDomainName -CdnEndpoint $endpoint
+  Write-Host "Enabling custom domain $env:CUSTOM_DOMAIN..."
+  $azCustomDomain = New-AzCdnCustomDomain -HostName $env:CUSTOM_DOMAIN -CdnEndpoint $endpoint -CustomDomainName $azCdnCustomDomainName
 }
 catch {
   try {
-    Write-Host "Enabling custom domain $env:CUSTOM_DOMAIN..."
-    $azCustomDomain = New-AzCdnCustomDomain -HostName $env:CUSTOM_DOMAIN -CdnEndpoint $endpoint -CustomDomainName $azCdnCustomDomainName
-    continue;
+    Write-Host 'Checking for existing custom domain name...'
+    $azCustomDomain = Get-AzCdnCustomDomain -CustomDomainName $azCdnCustomDomainName -CdnEndpoint $endpoint
   }
   catch {
-    Write-Error 'Could not create custom domain for CDN Endpoint'
+    Write-Error 'Could not create custom domain for CDN Endpoint, it also could not be found!'
     throw;
   }
 }
@@ -39,6 +38,9 @@ if ($azCustomDomain.CustomHttpsProvisioningState -ne ('Enabled' -or 'Enabling'))
     Write-Error "Error enabling HTTPS for $env:CUSTOM_DOMAIN..."
     throw;
   }
+} elseif ($azCustomDomain -eq $null) {
+  Write-Error 'Failed to set custom domain, Domain object was null!'
+  throw;
 }
 
 
