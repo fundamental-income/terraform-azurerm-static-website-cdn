@@ -12,15 +12,16 @@ try {
   $azCustomDomain = Get-AzCdnCustomDomain -CustomDomainName $azCdnCustomDomainName -CdnEndpoint $endpoint
 }
 catch {
-  try {
-    Write-Host "Enabling custom domain $env:CUSTOM_DOMAIN..."
-    $azCustomDomain = New-AzCdnCustomDomain -HostName $env:CUSTOM_DOMAIN -CdnEndpoint $endpoint -CustomDomainName $azCdnCustomDomainName
-    continue;
-  }
-  catch {
-    Write-Error 'Could not create custom domain for CDN Endpoint'
-    throw;
-  }
+  Write-Warning 'Could not create new custom domain... it looks like it may already exist... Checking'
+}
+
+try {
+  Write-Host 'Checking for existing custom domain name...'
+  $azCustomDomain = Get-AzCdnCustomDomain -CustomDomainName $azCdnCustomDomainName -CdnEndpoint $endpoint
+}
+catch {
+  Write-Error 'Could not create custom domain for CDN Endpoint, it also could not be found!'
+  throw;
 }
 
 if ($azCustomDomain.CustomHttpsProvisioningState -ne ('Enabled' -or 'Enabling')) {
