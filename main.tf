@@ -85,7 +85,7 @@ resource "azurerm_cdn_endpoint" "cdn-endpoint" {
 
   origin {
     name      = "websiteorginaccount"
-    host_name = length(var.custom_domain_name) > 0 ? var.custom_domain_name : azurerm_storage_account.storeacc.primary_web_host
+    host_name = azurerm_storage_account.storeacc.primary_web_host
   }
 
 }
